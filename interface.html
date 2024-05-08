@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn Post Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #56c3de;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #4cae4c;
+        }
+        #postResult {
+            display: none; /* Initially hide the result section */
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LinkedIn Post Generator</h1>
+        <form id="postForm">
+            <div class="form-group">
+                <label for="objective">Objective:</label>
+                <textarea type="text" id="objective" name="objective"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="audience">Audience:</label>
+                <textarea type="text" id="audience" name="audience"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="topic">Topic:</label>
+                <textarea type="text" id="topic" name="topic"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="keyPoints">Key Points:</label>
+                <textarea id="keyPoints" name="keyPoints"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="examples">Examples:</label>
+                <textarea id="examples" name="examples"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="structure">Structure (JSON):</label>
+                <textarea id="structure" name="structure" placeholder='{"introduction": "...", "problems": "...", "examples": "...", "conclusion": "..."}'></textarea>
+            </div>
+            <div class="form-group">
+                <label for="toneStyle">Tone and Style (JSON):</label>
+                <textarea id="toneStyle" name="toneStyle" placeholder='{"tone": "Professional", "style": "Approachable"}'></textarea>
+            </div>
+            <div class="form-group">
+                <label for="engagement">Engagement:</label>
+                <textarea type="text" id="engagement" name="engagement"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="postExamples">Post Examples:</label>
+                <textarea id="postExamples" name="postExamples"></textarea>
+            </div>
+            <button type="button" onclick="submitForm()">Submit</button>
+        </form>
+        <div id="postResult" class="form-group" style="margin-top: 20px;">
+            <label>Generated Post:</label>
+            <div id="generatedPostContent" style="white-space: pre-wrap; background: #eee; padding: 10px; border-radius: 5px;"></div>
+        </div>
+    </div>
+
+    <script>
+        function submitForm() {
+            let structure = {};
+            let toneStyle = {};
+    
+            try {
+                structure = JSON.parse(document.getElementById('structure').value);
+            } catch (e) {
+                console.error("Invalid structure JSON:", e);
+                alert("Invalid structure format. Please provide valid JSON.");
+                return;
+            }
+    
+            try {
+                toneStyle = JSON.parse(document.getElementById('toneStyle').value);
+            } catch (e) {
+                console.error("Invalid tone/style JSON:", e);
+                alert("Invalid tone/style format. Please provide valid JSON.");
+                return;
+            }
+    
+            const formData = {
+                objective: document.getElementById('objective').value,
+                audience: document.getElementById('audience').value,
+                topic: document.getElementById('topic').value,
+                key_points: document.getElementById('keyPoints').value,
+                examples: document.getElementById('examples').value,
+                structure: structure,
+                tone_style: toneStyle,
+                engagement: document.getElementById('engagement').value,
+                post_examples: document.getElementById('postExamples').value
+            };
+            console.log('Form Data:', formData);
+    
+            fetch('http://127.0.0.1:5000/generate_post', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(errData => {
+                        throw new Error(errData.error || 'Network response was not ok');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                if (data['LinkedIn Post']) {
+                    document.getElementById('generatedPostContent').innerText = data['LinkedIn Post'];
+                    document.getElementById('postResult').style.display = 'block';
+                    document.getElementById('postResult').scrollIntoView({ behavior: 'smooth' });
+                } else if (data['error']) {
+                    document.getElementById('generatedPostContent').innerText = 'Error: ' + data['error'];
+                    document.getElementById('postResult').style.display = 'block';
+                    document.getElementById('postResult').scrollIntoView({ behavior: 'smooth' });
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                document.getElementById('generatedPostContent').innerText = 'Failed to generate the post. Please try again.';
+            });
+        }
+    </script>
+    
+</body>
+</html>
