@@ -1,7 +1,8 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, make_response
 from flask_session import Session
-from flask_cors import CORS, cross_origin
+from flask_cors import CORS
 import logging
+import os
 import content_generation  # Import the content generation module
 
 # Configure logging
@@ -9,32 +10,46 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = "12345678900987654321"
+app.config['SECRET_KEY'] = os.getenv("Flask_session_key")
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 # Allow CORS for all domains on all routes
-CORS(app)
+CORS(app, resources={r"/generate_post": {"origins": "*"}})  # Setup CORS
 
+
+def _build_cors_prelight_response():
+    response = make_response()
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add('Access-Control-Allow-Headers', '*')
+    response.headers.add('Access-Control-Allow-Methods', '*')
+    return response
 
 # Generate Post Endpoint
 @app.route('/generate_post', methods=['POST','OPTIONS'])
 def generate_post():
+    if request.method == 'OPTIONS':
+        return _build_cors_prelight_response()
+    elif request.method == 'POST':
+        data = request.get_json(force=True)
     required_keys = ['objective','audience', 'topic', 'key_points', 'examples', 'structure', 'tone_style', 'engagement', 'post_examples']
-    missing_keys = [key for key in required_keys if key not in session]
+    missing_keys = [key for key in required_keys if key not in data]
     if missing_keys:
         return jsonify({"error": f"Missing data for post generation: {missing_keys}"}), 400
+    # Access session data safely
+    topic = session.get('topic', 'Default Topic')
+    trending_topic = content_generation.get_trending_topic(topic)
 
-    trending_topic = content_generation.get_trending_topic(session['topic'])
-
+   # Assuming 'structure' and 'tone_style' are dictionaries stored in the session
     prompt = (
-        f"Generate a LinkedIn post aimed at {session['audience']}, focusing on {session['topic']} and {trending_topic}. "
-        f"The objective of the post is: {session['objective']}. "
-        f"The post should cover key points like {session['key_points']}. "
-        f"It should start with {session['structure']['introduction']} and use examples such as {session['examples']}. "
-        f"It will conclude with {session['structure']['conclusion']} and maintain a {session['tone_style']['tone']} tone and {session['tone_style']['style']} style. "
-        f"The post should be {session['engagement']}. "
-        f"Additionally, here are some examples from the field: {session['post_examples']}."
+        f"Generate a LinkedIn post aimed at {session.get('audience')}, focusing on {topic} and {trending_topic}. "
+        f"The objective of the post is: {session.get('objective')}. "
+        f"The post should cover key points like {session.get('key_points')}. "
+        f"It should start with {session.get('structure', {}).get('introduction')} and use examples such as {session.get('examples')}. "
+        f"It will conclude with {session.get('structure', {}).get('conclusion')} and maintain a {session.get('tone_style', {}).get('tone')} tone and {session.get('tone_style', {}).get('style')} style. "
+        f"The post should be {session.get('engagement')}. "
+        f"Additionally, here are some examples from the field: {session.get('post_examples')}."
     )
+
 
     post_content = content_generation.call_openai_to_generate_post(prompt)
     print(f"Post content: {post_content}")

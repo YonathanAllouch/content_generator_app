@@ -56,39 +56,39 @@
         <form id="postForm">
             <div class="form-group">
                 <label for="objective">Objective:</label>
-                <textarea type="text" id="objective" name="objective"></textarea>
+                <textarea id="objective" name="objective"></textarea>
             </div>
             <div class="form-group">
                 <label for="audience">Audience:</label>
-                <textarea type="text" id="audience" name="audience"></textarea>
+                <textarea id="audience" name="audience"></textarea>
             </div>
             <div class="form-group">
                 <label for="topic">Topic:</label>
-                <textarea type="text" id="topic" name="topic"></textarea>
+                <textarea id="topic" name="topic"></textarea>
             </div>
             <div class="form-group">
-                <label for="keyPoints">Key Points:</label>
-                <textarea id="keyPoints" name="keyPoints"></textarea>
+                <label for="key_Points">Key Points:</label>
+                <textarea id="key_Points" name="key_Points"></textarea>
             </div>
             <div class="form-group">
                 <label for="examples">Examples:</label>
                 <textarea id="examples" name="examples"></textarea>
             </div>
             <div class="form-group">
-                <label for="structure">Structure (JSON):</label>
-                <textarea id="structure" name="structure" placeholder='{"introduction": "...", "problems": "...", "examples": "...", "conclusion": "..."}'></textarea>
+                <label for="structure">Structure:</label>
+                <textarea id="structure" name="structure" placeholder='{"introduction": "...", "body": "...", "conclusion": "..."}'></textarea>
             </div>
             <div class="form-group">
-                <label for="toneStyle">Tone and Style (JSON):</label>
-                <textarea id="toneStyle" name="toneStyle" placeholder='{"tone": "Professional", "style": "Approachable"}'></textarea>
+                <label for="tone_Style">Tone and Style:</label>
+                <textarea id="tone_Style" name="tone_Style" placeholder='{"tone": "Professional", "style": "Approachable"}'></textarea>
             </div>
             <div class="form-group">
                 <label for="engagement">Engagement:</label>
-                <textarea type="text" id="engagement" name="engagement"></textarea>
+                <textarea id="engagement" name="engagement"></textarea>
             </div>
             <div class="form-group">
-                <label for="postExamples">Post Examples:</label>
-                <textarea id="postExamples" name="postExamples"></textarea>
+                <label for="post_Examples">Post Examples:</label>
+                <textarea id="post_Examples" name="post_Examples"></textarea>
             </div>
             <button type="button" onclick="submitForm()">Submit</button>
         </form>
@@ -97,41 +97,38 @@
             <div id="generatedPostContent" style="white-space: pre-wrap; background: #eee; padding: 10px; border-radius: 5px;"></div>
         </div>
     </div>
-
+</body>
     <script>
         function submitForm() {
-            let structure = {};
-            let toneStyle = {};
+            let structure;
+            let toneStyle;
     
+            // Attempt to parse the JSON data for structure and tone/style
             try {
                 structure = JSON.parse(document.getElementById('structure').value);
+                toneStyle = JSON.parse(document.getElementById('tone_Style').value);
             } catch (e) {
-                console.error("Invalid structure JSON:", e);
-                alert("Invalid structure format. Please provide valid JSON.");
+                console.error("Invalid JSON:", e);
+                alert("Invalid JSON format. Please ensure 'Structure' and 'Tone and Style' fields are correct JSON.");
                 return;
             }
     
-            try {
-                toneStyle = JSON.parse(document.getElementById('toneStyle').value);
-            } catch (e) {
-                console.error("Invalid tone/style JSON:", e);
-                alert("Invalid tone/style format. Please provide valid JSON.");
-                return;
-            }
-    
+            // Form data using corrected element IDs and ensuring JSON objects are used
             const formData = {
                 objective: document.getElementById('objective').value,
                 audience: document.getElementById('audience').value,
                 topic: document.getElementById('topic').value,
-                key_points: document.getElementById('keyPoints').value,
+                key_points: document.getElementById('key_Points').value,
                 examples: document.getElementById('examples').value,
-                structure: structure,
-                tone_style: toneStyle,
+                structure: structure, // Use parsed data
+                tone_style: toneStyle, // Use parsed data
                 engagement: document.getElementById('engagement').value,
-                post_examples: document.getElementById('postExamples').value
+                post_examples: document.getElementById('post_Examples').value
             };
+    
             console.log('Form Data:', formData);
     
+            // Send the form data to the server via fetch API
             fetch('http://127.0.0.1:5000/generate_post', {
                 method: 'POST',
                 headers: {
@@ -139,32 +136,23 @@
                 },
                 body: JSON.stringify(formData)
             })
-            .then(response => {
+            .then(response => response.json().then(data => {
                 if (!response.ok) {
-                    return response.json().then(errData => {
-                        throw new Error(errData.error || 'Network response was not ok');
-                    });
+                    throw new Error('Error: ' + (data.error || 'Unknown error'));
                 }
-                return response.json();
-            })
+                return data;
+            }))
             .then(data => {
                 console.log('Success:', data);
-                if (data['LinkedIn Post']) {
-                    document.getElementById('generatedPostContent').innerText = data['LinkedIn Post'];
-                    document.getElementById('postResult').style.display = 'block';
-                    document.getElementById('postResult').scrollIntoView({ behavior: 'smooth' });
-                } else if (data['error']) {
-                    document.getElementById('generatedPostContent').innerText = 'Error: ' + data['error'];
-                    document.getElementById('postResult').style.display = 'block';
-                    document.getElementById('postResult').scrollIntoView({ behavior: 'smooth' });
-                }
-            })
-            .catch((error) => {
+                document.getElementById('generatedPostContent').innerText = data['LinkedIn Post'];
+                document.getElementById('postResult').style.display = 'block';
+                document.getElementById('postResult').scrollIntoView({behavior: 'smooth'});
+                })
+                .catch(error => {
                 console.error('Error:', error);
+                alert('Error: ' + error.message);
                 document.getElementById('generatedPostContent').innerText = 'Failed to generate the post. Please try again.';
             });
         }
     </script>
-    
-</body>
 </html>

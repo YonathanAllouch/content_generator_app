@@ -35,7 +35,6 @@ def call_openai_to_generate_post(prompt):
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,
-            max_tokens=150
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
