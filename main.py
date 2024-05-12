@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session, make_response
+from flask import Flask, request, jsonify, session, make_response, send_from_directory
 from flask_session import Session
 from flask_cors import CORS
 import logging
@@ -110,6 +110,9 @@ def set_post_examples():
     session['post_examples'] = example
     return jsonify({"message": "Post examples added successfully. Let me prepare a draft for your LinkedIn post based on your inputs."}), 200
 
+@app.route('/interface.html')
+def serve_interface():
+    return send_from_directory('static', 'interface.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

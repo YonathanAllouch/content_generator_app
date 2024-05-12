@@ -3,3 +3,5 @@
 __pycache__/
 .vscode/
 flask_session
+node_modules
+*.json
