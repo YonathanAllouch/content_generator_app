@@ -28,3 +28,6 @@ jobs:
     - name: Run Python script
       run: |
         python main.py  # Runs your Python script
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        Flask_session_key:  ${{ secrets.Flask_session_key}}
