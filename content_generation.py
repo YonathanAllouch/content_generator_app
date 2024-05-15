@@ -4,6 +4,9 @@ import logging
 import os
 from pytrends.request import TrendReq
 import pandas as pd
+from dotenv import load_dotenv
+# Load environment variables from .env file
+load_dotenv()
 
 # Initialize OpenAI client with API key
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
