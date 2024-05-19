@@ -5,3 +5,5 @@ __pycache__/
 flask_session
 node_modules
 *.json
+*.pdf
+assistant.py
