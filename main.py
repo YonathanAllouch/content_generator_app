@@ -3,7 +3,7 @@ from flask_session import Session
 from flask_cors import CORS
 import logging
 import os
-import content_generation  # Import the content generation module
+from content_generation import generate_posts,regenerate_post # Import the content generation module
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -40,10 +40,10 @@ def generate_post():
         post_length = data['post_length']
 
         # Generate posts
-        posts = content_generation.generate_posts(company_name, num_posts, post_length)
+        posts = generate_posts(company_name, num_posts, post_length)
         logging.info(f"Posts Data: {posts}")
-        print(posts)
         return jsonify({"LinkedIn Posts": posts}), 200
+    
 
 # Edit and Regenerate Post Endpoint
 @app.route('/edit_post/<int:post_index>', methods=['POST'])
@@ -54,7 +54,7 @@ def edit_post(post_index):
     company_name = data.get('company_name')
 
     # Regenerate post with modifications
-    regenerated_post = content_generation.regenerate_post(company_name, original_content, modifications)
+    regenerated_post = regenerate_post(company_name, original_content, modifications)
     return jsonify({"LinkedIn Post": regenerated_post}), 200
 
 @app.route('/')

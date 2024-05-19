@@ -70,19 +70,22 @@
             top: 10px;
             right: 10px;
         }
-        .copy-button, .edit-button {
-            background-color: #4cae4c;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            padding: 5px 10px;
+        .copy-button img, .edit-button img {
+            height: 10px; /* Adjust the size as needed */
+            width: auto;
             cursor: pointer;
-            font-size: 12px;
-            margin-left: 5px;
         }
-        .copy-button:hover, .edit-button:hover {
-            background-color: #3b8b3b;
+
+        .copy-button, .edit-button {
+            background: none;
+            border: none;
+            padding: 5px;
         }
+
+        .copy-button:hover img, .edit-button:hover img {
+            opacity: 0.8; /* Adds a slight effect on hover */
+        }
+
         #editModal {
             display: none;
             position: fixed;
@@ -131,7 +134,7 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="num_posts">NUmber of Posts:</label>
+                <label for="num_posts">Number of Posts:</label>
                 <select id="num_posts" name="num_posts" required>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -188,27 +191,38 @@
                 },
                 body: JSON.stringify(formData)
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log(response); // Add this to check the full response object
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
             .then(data => {
                 const postContent = data['LinkedIn Posts'];
                 const postResult = document.getElementById('generatedPostContent');
                 postResult.innerHTML = ''; // Clear previous results
                 
                 postContent.forEach((post, index) => {
-                    const postBlock = document.createElement('div');
-                    postBlock.className = 'post-block';
-                    postBlock.innerHTML = `
-                        <div id="post-${index}">${post}</div>
-                        <div class="post-controls">
-                            <button class="copy-button" onclick="copyToClipboard('post-${index}')">Copier</button>
-                            <button class="edit-button" onclick="openEditModal(${index}, '${post}')">Modifier</button>
-                        </div>
-                    `;
-                    postResult.appendChild(postBlock);
-                });
-                
-                document.getElementById('postResult').style.display = 'block';
-                document.getElementById('postResult').scrollIntoView({behavior: 'smooth'});
+                const postBlock = document.createElement('div');
+                postBlock.className = 'post-block';
+                // Ensure `post.content` is used to access the text content correctly
+                postBlock.innerHTML = `
+                <div id="post-${index}">${post.content}</div>
+                <div class="post-controls">
+                    <button class="copy-button" onclick="copyToClipboard('post-${index}')">
+                        <img src="/Users/yonathanallouch/Desktop/MAIA_Digital/content_generator_app/static/images/copy.png" alt="Copy">
+                    </button>
+                    <button class="edit-button" onclick="openEditModal(${index}, '${post}')">
+                        <img src="/Users/yonathanallouch/Desktop/MAIA_Digital/content_generator_app/static/images/edit.png" alt="Edit">
+                    </button>
+                </div>
+                `;
+                postResult.appendChild(postBlock);
+            });
+
+            document.getElementById('postResult').style.display = 'block';
+            document.getElementById('postResult').scrollIntoView({behavior: 'smooth'});
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -254,7 +268,14 @@
                     company_name: companyName
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log(response); // Add this to check the full response object
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+
             .then(data => {
                 document.getElementById(`post-${currentEditIndex}`).innerText = data['LinkedIn Post'];
                 closeEditModal();

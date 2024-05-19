@@ -23,24 +23,30 @@ threads_ids = {
 }
 # Generate posts using OpenAI API
 def generate_posts(company_name, num_posts, post_length):
+    print(post_length)
     posts = []
-    assistant_id = assistant_ids.get(company_name)
-    thread_id = threads_ids.get(company_name)
+    assistant_id = "asst_gmdISWXu28k4tLfrXa2lKBiG"
+    thread_id = "thread_sQ3KZOfoH1TKZqShKuhtMorC"
     if not (assistant_id or thread_id):
         logging.error(f"Missing ID for the company: {company_name}")
         return ["Error: No ID found for the specified company."]
+
     for _ in range(num_posts):
-        message = f"Generate a {post_length} LinkedIn post."
-        message = client.beta.threads.messages.create(thread_id=thread_id, role="user", content=message)
-        run = client.beta.threads.runs.create(thread_id=thread_id, assistant_id=assistant_id, instructions=f"the post need to be a {post_length} post")
         try:
-            response = wait_for_run_completion(client=client ,thread_id= thread_id, run_id = run.id)
-            return jsonify(response), 200
-        except openai.NotFoundError:
-            # Handling the case where the thread ID is not found
-            return jsonify({"error": "Thread ID not found, please check and try again."}), 404
-    posts.append(response)
-    return posts
+            message = f"Generate a {post_length} LinkedIn post."
+            # Creating a message in a thread
+            client.beta.threads.messages.create(thread_id=thread_id, role="user", content=message)
+            run = client.beta.threads.runs.create(thread_id=thread_id, assistant_id=assistant_id, instructions=f"the post needs to be a {post_length} post")
+            response = wait_for_run_completion(client, thread_id, run.id)
+            if response.startswith("Error") or response == "No content received":
+                posts.append({'error': response})
+            else:
+                posts.append({'content': response})
+        except Exception as e:
+            logging.error(f"An error occurred: {str(e)}")
+            posts.append({'error': str(e)})
+
+    return posts  # Return a list of post contents or errors
 
 # Regenerate post with modifications
 def regenerate_post(company_name, original_content, modifications):
@@ -82,10 +88,10 @@ def wait_for_run_completion(client, thread_id, run_id, sleep_interval=5):
                 logging.info(f"Run completed in {formatted_elapsed_time}")
                 # Get messages here once Run is completed!
                 messages = client.beta.threads.messages.list(thread_id=thread_id)
-                last_message = messages.data[0]
-                response = last_message.content[0].text.value
-                print(f"Assistant Response: {response}")
-                break
+                for message in reversed(messages.data):
+                    if message.role == 'assistant' and message.content:
+                        return message.content[0].text.value
+                return "No content received"
         except Exception as e:
             logging.error(f"An error occurred while retrieving the run: {e}")
             break

@@ -7,3 +7,4 @@ node_modules
 *.json
 *.pdf
 assistant.py
+*.png
