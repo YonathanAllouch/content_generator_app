@@ -23,20 +23,31 @@ threads_ids = {
 }
 # Generate posts using OpenAI API
 def generate_posts(company_name, num_posts, post_length):
-    print(post_length)
     posts = []
     assistant_id = "asst_gmdISWXu28k4tLfrXa2lKBiG"
     thread_id = "thread_sQ3KZOfoH1TKZqShKuhtMorC"
     if not (assistant_id or thread_id):
         logging.error(f"Missing ID for the company: {company_name}")
         return ["Error: No ID found for the specified company."]
+    
+    logging.info(f"Generating {num_posts} {post_length} post(s) for company: {company_name}")
 
     for _ in range(num_posts):
         try:
             message = f"Generate a {post_length} LinkedIn post."
+            logging.info(f"Sending message: {message}")
             # Creating a message in a thread
             client.beta.threads.messages.create(thread_id=thread_id, role="user", content=message)
-            run = client.beta.threads.runs.create(thread_id=thread_id, assistant_id=assistant_id, instructions=f"the post needs to be a {post_length} post")
+            if post_length == "short":
+                instructions = "Please generate a short LinkedIn post. The post should be between 200 to 500 characters. Only provide the post content without any additional comments or context."
+            else :
+                instructions = "Please generate a long LinkedIn post. The post should be between 800 to 1500 characters. Only provide the post content without any additional comments or context."
+
+            run = client.beta.threads.runs.create(
+                thread_id=thread_id, 
+                assistant_id=assistant_id,
+                instructions=instructions
+            )
             response = wait_for_run_completion(client, thread_id, run.id)
             if response.startswith("Error") or response == "No content received":
                 posts.append({'error': response})
@@ -62,7 +73,7 @@ def regenerate_post(company_name, original_content, modifications):
         "Please regenerate the post incorporating these modifications."
     )
     message = client.beta.threads.messages.create(thread_id=thread_id, role="user", content=message)
-    run = client.beta.threads.runs.create(thread_id=thread_id, assistant_id=assistant_id, instructions=f"you need to do better")
+    run = client.beta.threads.runs.create(thread_id=thread_id, assistant_id=assistant_id, instructions=modifications)
     response = wait_for_run_completion(client=client ,thread_id= thread_id, run_id = run.id)
     return response
 
