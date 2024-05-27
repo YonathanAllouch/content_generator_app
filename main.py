@@ -3,7 +3,7 @@ from flask_session import Session
 from flask_cors import CORS
 import logging
 import os
-from content_generation import generate_posts,regenerate_post # Import the content generation module
+from content_generation import generate_posts, regenerate_post
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -13,8 +13,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("Flask_session_key")
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
-# Allow CORS for all domains on all routes
-CORS(app, resources={r"/generate_post": {"origins": "*"}})  # Setup CORS
+CORS(app, resources={r"/generate_post": {"origins": "*"}})
 
 def _build_cors_prelight_response():
     response = make_response()
@@ -23,7 +22,6 @@ def _build_cors_prelight_response():
     response.headers.add('Access-Control-Allow-Methods', '*')
     return response
 
-# Generate Post Endpoint
 @app.route('/generate_post', methods=['POST', 'OPTIONS'])
 def generate_post():
     if request.method == 'OPTIONS':
@@ -39,22 +37,19 @@ def generate_post():
         num_posts = int(data['num_posts'])
         post_length = data['post_length']
 
-        # Generate posts
-        posts = generate_posts(company_name, num_posts, post_length)
+        posts, thread_id = generate_posts(company_name, num_posts, post_length)
         logging.info(f"Posts Data: {posts}")
-        return jsonify({"LinkedIn Posts": posts}), 200
-    
+        return jsonify({"LinkedIn Posts": posts, "thread_id": thread_id}), 200
 
-# Edit and Regenerate Post Endpoint
 @app.route('/edit_post/<int:post_index>', methods=['POST'])
 def edit_post(post_index):
     data = request.get_json(force=True)
     modifications = data.get('modifications')
     original_content = data.get('original_content')
     company_name = data.get('company_name')
+    thread_id = data.get('thread_id')
 
-    # Regenerate post with modifications
-    regenerated_post = regenerate_post(company_name, original_content, modifications)
+    regenerated_post = regenerate_post(company_name, original_content, modifications, thread_id)
     return jsonify({"LinkedIn Post": regenerated_post}), 200
 
 @app.route('/')

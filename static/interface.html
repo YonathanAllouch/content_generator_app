@@ -183,7 +183,8 @@
         let currentEditIndex = null;
         let originalContent = "";
         let companyName = "";
-        
+        let currentThreadId = null; // Add this line to store the thread ID
+    
         function submitForm() {
             const formData = {
                 company_name: document.getElementById('company_name').value,
@@ -191,7 +192,7 @@
                 post_length: document.getElementById('post_length').value
             };
             companyName = formData.company_name;
-        
+    
             fetch('/generate_post', {
                 method: 'POST',
                 headers: {
@@ -207,23 +208,20 @@
             })
             .then(data => {
                 const postContent = data['LinkedIn Posts'];
+                currentThreadId = data['thread_id']; // Save the thread ID
                 const postResult = document.getElementById('generatedPostContent');
                 postResult.innerHTML = ''; // Clear previous results
-                
+    
                 postContent.forEach((post, index) => {
-                    // Extract text between quotes
-                    const match = post.content.match(/"([^"]+)"/);
-                    const quoteText = match ? match[1] : 'No quote found in the post'; // Default text if no quotes found
-                    
                     const postBlock = document.createElement('div');
                     postBlock.className = 'post-block';
-                    postBlock.innerHTML = `<div id="post-${index}">${quoteText}</div>`;
-                    
-                    const controls = createControls(index, quoteText);
+                    postBlock.innerHTML = `<div id="post-${index}">${post.content}</div>`;
+    
+                    const controls = createControls(index, post.content);
                     postBlock.appendChild(controls);
                     postResult.appendChild(postBlock);
                 });
-        
+    
                 document.getElementById('postResult').style.display = 'block';
                 document.getElementById('postResult').scrollIntoView({behavior: 'smooth'});
             })
@@ -232,27 +230,27 @@
                 alert('Error generating posts. Please try again.');
             });
         }
-        
+    
         function createControls(index, content) {
             const controls = document.createElement('div');
             controls.className = 'post-controls';
-            
+    
             const copyButton = document.createElement('button');
             copyButton.className = 'copy-button';
             copyButton.innerHTML = '<img src="/static/images/copy.png" alt="Copy">';
             copyButton.onclick = () => copyToClipboard(`post-${index}`);
-            
+    
             const editButton = document.createElement('button');
             editButton.className = 'edit-button';
             editButton.innerHTML = '<img src="/static/images/edit.png" alt="Edit">';
             editButton.onclick = () => openEditModal(index, content);
-            
+    
             controls.appendChild(copyButton);
             controls.appendChild(editButton);
-            
+    
             return controls;
         }
-        
+    
         function copyToClipboard(elementId) {
             const el = document.getElementById(elementId);
             const range = document.createRange();
@@ -263,22 +261,22 @@
             document.execCommand('copy');
             alert('Content copied!');
         }
-        
+    
         function openEditModal(index, content) {
             currentEditIndex = index;
             originalContent = content;
             document.getElementById('editPostContent').value = content;
             document.getElementById('editModal').style.display = 'block';
         }
-        
+    
         function closeEditModal() {
             document.getElementById('editModal').style.display = 'none';
         }
-        
+    
         function submitEdit() {
             const editedContent = document.getElementById('editPostContent').value;
             const modifications = `Changed content to: ${editedContent}`;
-            
+    
             fetch(`/edit_post/${currentEditIndex}`, {
                 method: 'POST',
                 headers: {
@@ -288,7 +286,8 @@
                     content: editedContent,
                     modifications: modifications,
                     original_content: originalContent,
-                    company_name: companyName
+                    company_name: companyName,
+                    thread_id: currentThreadId // Add the thread ID here
                 })
             })
             .then(response => {
@@ -298,19 +297,16 @@
                 return response.json();
             })
             .then(data => {
-               // Extract text between quotes
-            const match = data['LinkedIn Post'].match(/"([^"]+)"/);
-            const quoteText = match ? match[1] : 'No quote found in the post'; // Default text if no quotes found
-            
-            document.getElementById(`post-${currentEditIndex}`).innerText = quoteText;
-            closeEditModal();
+                document.getElementById(`post-${currentEditIndex}`).innerText = data['LinkedIn Post'];
+                closeEditModal();
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error editing post. Please try again.');
             });
         }
+        
         </script>
-        </body>
-        </html>
+    </body>
+    </html>
         
