@@ -28,7 +28,7 @@ def generate_post():
         return _build_cors_prelight_response()
     elif request.method == 'POST':
         data = request.get_json(force=True)
-        required_keys = ['company_name', 'num_posts', 'post_length']
+        required_keys = ['company_name', 'num_posts', 'post_length','additional_info']
         missing_keys = [key for key in required_keys if key not in data]
         if missing_keys:
             return jsonify({"error": f"Missing data for post generation: {missing_keys}"}), 400
@@ -36,8 +36,9 @@ def generate_post():
         company_name = data['company_name']
         num_posts = int(data['num_posts'])
         post_length = data['post_length']
+        additional_info = data['additional_info']
 
-        posts, thread_id = generate_posts(company_name, num_posts, post_length)
+        posts, thread_id = generate_posts(company_name, num_posts, post_length, additional_info)
         logging.info(f"Posts Data: {posts}")
         return jsonify({"LinkedIn Posts": posts, "thread_id": thread_id}), 200
 

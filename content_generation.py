@@ -21,7 +21,7 @@ assistant_ids = {
 }
 
 # Generate posts using OpenAI API
-def generate_posts(company_name, num_posts, post_length):
+def generate_posts(company_name, num_posts, post_length, additional_info):
     posts = []
     assistant_id = assistant_ids.get(company_name)
 
@@ -39,15 +39,17 @@ def generate_posts(company_name, num_posts, post_length):
 
     for _ in range(num_posts):
         try:
-            message = f"Generate a {post_length} LinkedIn post.Follow the rules from the instruction's assistant,Exclude hashtags and emojis."
+            message = f"Generate a {post_length} LinkedIn post.Follow the rules from the instruction's assistant,Exclude hashtags and emojis.The subject of the post is {additional_info}"
             logging.info(f"Sending message: {message}")
             # Creating a message in the thread
             client.beta.threads.messages.create(thread_id=thread_id, role="user", content=message)
 
             if post_length == "short":
-                instructions = f"Please generate a short LinkedIn post about the Company {company_name}.Use the instructions of the assistant to write it. The post should be between 200 to 500 characters. Only provide the post content without any additional comments or context.You must Exclude all hashtags and emojis."
+                instructions = f"Please generate a short LinkedIn post about the Company {company_name} talk about {additional_info}.Use the instructions of the assistant to write it. The post should be between 400 to 700 characters. Only provide the post content without any additional comments or context.You must Exclude all hashtags and emojis."
+            elif post_length == "medium":
+                instructions = f"Please generate a medium LinkedIn post about the Company {company_name} talk about {additional_info}.Use the instructions of the assistant to write it. The post should be between 700 to 1100 characters. Only provide the post content without any additional comments or context.You must Exclude all hashtags and emojis."     
             else:
-                instructions = f"Please generate a long LinkedIn post  about the Company {company_name}.Use the instructions of the assistant to write it. The post should be between 800 to 1500 characters. Only provide the post content without any additional comments or context.You must Exclude allhashtags and emojis."
+                instructions = f"Please generate a long LinkedIn post  about the Company {company_name} talk about {additional_info}.Use the instructions of the assistant to write it. The post should be between 1100 to 1500 characters. Only provide the post content without any additional comments or context.You must Exclude allhashtags and emojis."
 
             run = client.beta.threads.runs.create(
                 thread_id=thread_id,
