@@ -25,9 +25,23 @@ jobs:
         python -m pip install --upgrade pip  # Upgrades pip
         pip install -r requirements.txt  # Installs dependencies from requirements.txt
 
-    - name: Run Python script
+    - name: Run tests
       run: |
-        python main.py  # Runs your Python script
+        python -m venv venv
+        source venv/bin/activate
+        pytest  # Assumes you have tests to run
+
+    - name: Deploy to Heroku
+      run: |
+        heroku login -i
+        git push heroku master
+      env:
+        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+
+    - name: Run Gunicorn
+      run: |
+        source venv/bin/activate
+        gunicorn main:app
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        Flask_session_key:  ${{ secrets.Flask_session_key}}
+        Flask_session_key: ${{ secrets.Flask_session_key }}
