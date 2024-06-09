@@ -139,12 +139,12 @@
             display: flex;
         }
 
-        .copy-button img, .edit-button img {
+        .copy-button img, .edit-button img, .prev-button img, .next-button img {
             height: 20px;
             width: auto;
         }
 
-        .copy-button, .edit-button {
+        .copy-button, .edit-button, .prev-button, .next-button {
             background: none;
             border: none;
             padding: 0;
@@ -153,7 +153,7 @@
             margin-right: 5px;
         }
 
-        .copy-button:hover img, .edit-button:hover img {
+        .copy-button:hover img, .edit-button:hover img, .prev-button:hover img, .next-button:hover img {
             opacity: 0.8;
         }
 
@@ -199,8 +199,8 @@
                 <label for="company_name">Company name:</label>
                 <select id="company_name" name="company_name" required>
                     <option value="Tadiran">Tadiran</option>
-                    <option value="CompanyB">Company B</option>
-                    <option value="CompanyC">Company C</option>
+                    <option value="Cyber_Insurance_Academy">Cyber Insurance Academy</option>
+                    <option value="CybergymIEC">CybergymIEC</option>
                     <!-- Add more companies as needed -->
                 </select>
             </div>
@@ -253,6 +253,14 @@
             <h2>Edit Post</h2>
             <textarea id="editPostContent" rows="10" style="width: 100%;"></textarea>
             <button type="button" onclick="submitEdit()">Submit Edit</button>
+            <div id="loading-indicator-edit" style="display: none;">
+                <div class="spinner">
+                    <div class="bounce1"></div>
+                    <div class="bounce2"></div>
+                    <div class="bounce3"></div>
+                </div>
+                <p>Loading...</p>
+            </div>
         </div>
     </div>
     <script>
@@ -260,6 +268,8 @@
         let originalContent = "";
         let companyName = "";
         let currentThreadId = null; // Add this line to store the thread ID
+        let postVersions = []; // Store versions of posts
+
 
         function submitForm() {
             const loadingIndicator = document.getElementById('loading-indicator');
@@ -297,6 +307,7 @@
                     const postBlock = document.createElement('div');
                     postBlock.className = 'post-block';
                     postBlock.innerHTML = `<div id="post-${index}">${post.content}</div>`;
+                    postVersions[index] = [post.content]; // Initialize post versions
 
                     const controls = createControls(index, post.content);
                     postBlock.appendChild(controls);
@@ -327,11 +338,24 @@
             editButton.innerHTML = '<img src="/static/images/edit.png" alt="Edit">';
             editButton.onclick = () => openEditModal(index, content);
 
+            const prevButton = document.createElement('button');
+            prevButton.className = 'prev-button';
+            prevButton.innerHTML = '<img src="/static/images/previous.png" alt="Previous">';
+            prevButton.onclick = () => showPreviousVersion(index);
+
+            const nextButton = document.createElement('button');
+            nextButton.className = 'next-button';
+            nextButton.innerHTML = '<img src="/static/images/next.png" alt="Next">';
+            nextButton.onclick = () => showNextVersion(index);
+
             controls.appendChild(copyButton);
             controls.appendChild(editButton);
+            controls.appendChild(prevButton);
+            controls.appendChild(nextButton);
 
             return controls;
         }
+
 
         function copyToClipboard(elementId) {
             const el = document.getElementById(elementId);
@@ -344,19 +368,19 @@
             alert('Content copied!');
         }
 
-        function openEditModal(index, content) {
+        function openEditModal(index) {
             currentEditIndex = index;
-            originalContent = content;
-            document.getElementById('editPostContent').value = content;
+            originalContent = document.getElementById(`post-${index}`).innerText; // Use the current content as the original content
+            document.getElementById('editPostContent').value = originalContent;
             document.getElementById('editModal').style.display = 'block';
         }
-
         function closeEditModal() {
             document.getElementById('editModal').style.display = 'none';
         }
 
         function submitEdit() {
-            const loadingIndicator = document.getElementById('loading-indicator');
+            const loadingIndicatorEdit = document.getElementById('loading-indicator-edit');
+            loadingIndicatorEdit.style.display = 'block';
             const editedContent = document.getElementById('editPostContent').value;
             const modifications = `Changed content to: ${editedContent}`;
 
@@ -380,15 +404,36 @@
                 return response.json();
             })
             .then(data => {
-                loadingIndicator.style.display = 'none';
-                document.getElementById(`post-${currentEditIndex}`).innerText = data['LinkedIn Post'];
+                loadingIndicatorEdit.style.display = 'none';
+                const newContent = data['LinkedIn Post']; // Define newContent here
+                document.getElementById(`post-${currentEditIndex}`).innerText = newContent;
+                postVersions[currentEditIndex].push(newContent); // Add new version
                 closeEditModal();
             })
             .catch(error => {
-                loadingIndicator.style.display = 'none';
+                loadingIndicatorEdit.style.display = 'none';
                 console.error('Error:', error);
                 alert('Error editing post. Please try again.');
             });
+        }
+        function showPreviousVersion(index) {
+            const currentContent = document.getElementById(`post-${index}`).innerText;
+            const versions = postVersions[index];
+            const currentIndex = versions.indexOf(currentContent);
+
+            if (currentIndex > 0) {
+                document.getElementById(`post-${index}`).innerText = versions[currentIndex - 1];
+            }
+        }
+
+        function showNextVersion(index) {
+            const currentContent = document.getElementById(`post-${index}`).innerText;
+            const versions = postVersions[index];
+            const currentIndex = versions.indexOf(currentContent);
+
+            if (currentIndex < versions.length - 1) {
+                document.getElementById(`post-${index}`).innerText = versions[currentIndex + 1];
+            }
         }
     </script>
 </body>
