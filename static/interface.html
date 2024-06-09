@@ -36,14 +36,23 @@
             background-color: #fff;
             font-size: 16px;
             color: #333;
-            appearance: none; /* Remove default styling on some browsers */
-            -webkit-appearance: none; /* Remove default styling on Safari */
+            appearance: none;
         }
         select {
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16"><path fill="none" stroke="%23333" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6l4 4 4-4"/></svg>');
             background-repeat: no-repeat;
             background-position: right 10px center;
             background-size: 12px 12px;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #fff;
+            font-size: 16px;
+            color: #333;
         }
         button {
             background-color: #56c3de;
@@ -56,6 +65,62 @@
         button:hover {
             background-color: #4cae4c;
         }
+        #loading-indicator {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 1000;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .spinner {
+            margin: 0 auto;
+            width: 70px;
+            text-align: center;
+            height: 70px;
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .spinner > div {
+            width: 18px;
+            height: 18px;
+            background-color: #333;
+            border-radius: 100%;
+            display: inline-block;
+            -webkit-animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+            animation: sk-bouncedelay 1.4s infinite ease-in-out both;
+        }
+
+        .spinner .bounce1 {
+            -webkit-animation-delay: -0.32s;
+            animation-delay: -0.32s;
+        }
+
+        .spinner .bounce2 {
+            -webkit-animation-delay: -0.16s;
+            animation-delay: -0.16s;
+        }
+
+        @-webkit-keyframes sk-bouncedelay {
+            0%, 80%, 100% { -webkit-transform: scale(0) }
+            40% { -webkit-transform: scale(1.0) }
+        }
+
+        @keyframes sk-bouncedelay {
+            0%, 80%, 100% {
+                -webkit-transform: scale(0);
+                transform: scale(0);
+            } 40% {
+                -webkit-transform: scale(1.0);
+                transform: scale(1.0);
+            }
+        }
         .post-block {
             position: relative;
             background-color: #fff;
@@ -64,7 +129,7 @@
             padding: 35px 15px 25px; 
             margin-bottom: 20px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            overflow: hidden; /* Ensures the contents including absolute elements are contained within */
+            overflow: hidden;
         }
 
         .post-controls {
@@ -74,24 +139,23 @@
             display: flex;
         }
 
-        .copy-button img, .edit-button img {
-            height: 20px; /* Adjust based on your preference */
+        .copy-button img, .edit-button img, .prev-button img, .next-button img {
+            height: 20px;
             width: auto;
         }
 
-        .copy-button, .edit-button {
+        .copy-button, .edit-button, .prev-button, .next-button {
             background: none;
             border: none;
-            padding: 0; /* Remove padding if not necessary */
+            padding: 0;
             cursor: pointer;
             font-size: 3px;
             margin-right: 5px;
         }
 
-        .copy-button:hover img, .edit-button:hover img {
-            opacity: 0.8; /* Adds a slight effect on hover */
+        .copy-button:hover img, .edit-button:hover img, .prev-button:hover img, .next-button:hover img {
+            opacity: 0.8;
         }
-
 
         #editModal {
             display: none;
@@ -135,8 +199,8 @@
                 <label for="company_name">Company name:</label>
                 <select id="company_name" name="company_name" required>
                     <option value="Tadiran">Tadiran</option>
-                    <option value="CompanyB">Company B</option>
-                    <option value="CompanyC">Company C</option>
+                    <option value="Cyber_Insurance_Academy">Cyber Insurance Academy</option>
+                    <option value="CybergymIEC">CybergymIEC</option>
                     <!-- Add more companies as needed -->
                 </select>
             </div>
@@ -159,15 +223,27 @@
                 <label for="post_length">Size of the Post:</label>
                 <select id="post_length" name="post_length" required>
                     <option value="short">Short</option>
+                    <option value="medium">Medium</option>
                     <option value="long">Long</option>
                 </select>
             </div>
+            <div class="form-group">
+                <label for="additional_info">Additional Information:</label>
+                <textarea id="additional_info" name="additional_info" rows="5" cols="55"></textarea>
+            </div>
             <button type="button" onclick="submitForm()">Submit</button>
+            <div id="loading-indicator" style="display: none;">
+                <div class="spinner">
+                    <div class="bounce1"></div>
+                    <div class="bounce2"></div>
+                    <div class="bounce3"></div>
+                </div>
+                <p>Loading...</p>
+            </div>
         </form>
         <div id="postResult" class="form-group" style="margin-top: 20px;">
             <label>Generated Posts:</label>
             <div id="generatedPostContent" style="white-space: pre-wrap;"></div>
-              </div>
         </div>
     </div>
     <!-- Modal for editing posts -->
@@ -177,21 +253,36 @@
             <h2>Edit Post</h2>
             <textarea id="editPostContent" rows="10" style="width: 100%;"></textarea>
             <button type="button" onclick="submitEdit()">Submit Edit</button>
+            <div id="loading-indicator-edit" style="display: none;">
+                <div class="spinner">
+                    <div class="bounce1"></div>
+                    <div class="bounce2"></div>
+                    <div class="bounce3"></div>
+                </div>
+                <p>Loading...</p>
+            </div>
         </div>
     </div>
     <script>
         let currentEditIndex = null;
         let originalContent = "";
         let companyName = "";
-        
+        let currentThreadId = null; // Add this line to store the thread ID
+        let postVersions = []; // Store versions of posts
+
+
         function submitForm() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            loadingIndicator.style.display = 'block';
+
             const formData = {
                 company_name: document.getElementById('company_name').value,
                 num_posts: document.getElementById('num_posts').value,
-                post_length: document.getElementById('post_length').value
+                post_length: document.getElementById('post_length').value,
+                additional_info: document.getElementById('additional_info').value
             };
             companyName = formData.company_name;
-        
+
             fetch('/generate_post', {
                 method: 'POST',
                 headers: {
@@ -206,53 +297,66 @@
                 return response.json();
             })
             .then(data => {
+                loadingIndicator.style.display = 'none';
                 const postContent = data['LinkedIn Posts'];
+                currentThreadId = data['thread_id']; // Save the thread ID
                 const postResult = document.getElementById('generatedPostContent');
                 postResult.innerHTML = ''; // Clear previous results
-                
+
                 postContent.forEach((post, index) => {
-                    // Extract text between quotes
-                    const match = post.content.match(/"([^"]+)"/);
-                    const quoteText = match ? match[1] : 'No quote found in the post'; // Default text if no quotes found
-                    
                     const postBlock = document.createElement('div');
                     postBlock.className = 'post-block';
-                    postBlock.innerHTML = `<div id="post-${index}">${quoteText}</div>`;
-                    
-                    const controls = createControls(index, quoteText);
+                    postBlock.innerHTML = `<div id="post-${index}">${post.content}</div>`;
+                    postVersions[index] = [post.content]; // Initialize post versions
+
+                    const controls = createControls(index, post.content);
                     postBlock.appendChild(controls);
                     postResult.appendChild(postBlock);
                 });
-        
+
                 document.getElementById('postResult').style.display = 'block';
                 document.getElementById('postResult').scrollIntoView({behavior: 'smooth'});
             })
             .catch(error => {
+                loadingIndicator.style.display = 'none';
                 console.error('Error:', error);
                 alert('Error generating posts. Please try again.');
             });
         }
-        
+
         function createControls(index, content) {
             const controls = document.createElement('div');
             controls.className = 'post-controls';
-            
+
             const copyButton = document.createElement('button');
             copyButton.className = 'copy-button';
             copyButton.innerHTML = '<img src="/static/images/copy.png" alt="Copy">';
             copyButton.onclick = () => copyToClipboard(`post-${index}`);
-            
+
             const editButton = document.createElement('button');
             editButton.className = 'edit-button';
             editButton.innerHTML = '<img src="/static/images/edit.png" alt="Edit">';
             editButton.onclick = () => openEditModal(index, content);
-            
+
+            const prevButton = document.createElement('button');
+            prevButton.className = 'prev-button';
+            prevButton.innerHTML = '<img src="/static/images/previous.png" alt="Previous">';
+            prevButton.onclick = () => showPreviousVersion(index);
+
+            const nextButton = document.createElement('button');
+            nextButton.className = 'next-button';
+            nextButton.innerHTML = '<img src="/static/images/next.png" alt="Next">';
+            nextButton.onclick = () => showNextVersion(index);
+
             controls.appendChild(copyButton);
             controls.appendChild(editButton);
-            
+            controls.appendChild(prevButton);
+            controls.appendChild(nextButton);
+
             return controls;
         }
-        
+
+
         function copyToClipboard(elementId) {
             const el = document.getElementById(elementId);
             const range = document.createRange();
@@ -263,22 +367,23 @@
             document.execCommand('copy');
             alert('Content copied!');
         }
-        
-        function openEditModal(index, content) {
+
+        function openEditModal(index) {
             currentEditIndex = index;
-            originalContent = content;
-            document.getElementById('editPostContent').value = content;
+            originalContent = document.getElementById(`post-${index}`).innerText; // Use the current content as the original content
+            document.getElementById('editPostContent').value = originalContent;
             document.getElementById('editModal').style.display = 'block';
         }
-        
         function closeEditModal() {
             document.getElementById('editModal').style.display = 'none';
         }
-        
+
         function submitEdit() {
+            const loadingIndicatorEdit = document.getElementById('loading-indicator-edit');
+            loadingIndicatorEdit.style.display = 'block';
             const editedContent = document.getElementById('editPostContent').value;
             const modifications = `Changed content to: ${editedContent}`;
-            
+
             fetch(`/edit_post/${currentEditIndex}`, {
                 method: 'POST',
                 headers: {
@@ -288,7 +393,8 @@
                     content: editedContent,
                     modifications: modifications,
                     original_content: originalContent,
-                    company_name: companyName
+                    company_name: companyName,
+                    thread_id: currentThreadId // Add the thread ID here
                 })
             })
             .then(response => {
@@ -298,19 +404,37 @@
                 return response.json();
             })
             .then(data => {
-               // Extract text between quotes
-            const match = data['LinkedIn Post'].match(/"([^"]+)"/);
-            const quoteText = match ? match[1] : 'No quote found in the post'; // Default text if no quotes found
-            
-            document.getElementById(`post-${currentEditIndex}`).innerText = quoteText;
-            closeEditModal();
+                loadingIndicatorEdit.style.display = 'none';
+                const newContent = data['LinkedIn Post']; // Define newContent here
+                document.getElementById(`post-${currentEditIndex}`).innerText = newContent;
+                postVersions[currentEditIndex].push(newContent); // Add new version
+                closeEditModal();
             })
             .catch(error => {
+                loadingIndicatorEdit.style.display = 'none';
                 console.error('Error:', error);
                 alert('Error editing post. Please try again.');
             });
         }
-        </script>
-        </body>
-        </html>
-        
+        function showPreviousVersion(index) {
+            const currentContent = document.getElementById(`post-${index}`).innerText;
+            const versions = postVersions[index];
+            const currentIndex = versions.indexOf(currentContent);
+
+            if (currentIndex > 0) {
+                document.getElementById(`post-${index}`).innerText = versions[currentIndex - 1];
+            }
+        }
+
+        function showNextVersion(index) {
+            const currentContent = document.getElementById(`post-${index}`).innerText;
+            const versions = postVersions[index];
+            const currentIndex = versions.indexOf(currentContent);
+
+            if (currentIndex < versions.length - 1) {
+                document.getElementById(`post-${index}`).innerText = versions[currentIndex + 1];
+            }
+        }
+    </script>
+</body>
+</html>
