@@ -25,10 +25,10 @@ jobs:
         python -m pip install --upgrade pip  # Upgrades pip
         pip install -r requirements.txt  # Installs dependencies from requirements.txt
 
-    - name: Run Gunicorn
-      run: |
-        source venv/bin/activate
-        gunicorn main:app
-      env:
-        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        Flask_session_key: ${{ secrets.Flask_session_key }}
+    # Comment out or remove the Run Python script step
+    # - name: Run Python script
+    #   run: |
+    #     python main.py  # Runs your Python script
+    #   env:
+    #     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    #     Flask_session_key:  ${{ secrets.Flask_session_key}}
