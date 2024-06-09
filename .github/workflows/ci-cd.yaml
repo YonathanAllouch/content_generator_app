@@ -25,19 +25,6 @@ jobs:
         python -m pip install --upgrade pip  # Upgrades pip
         pip install -r requirements.txt  # Installs dependencies from requirements.txt
 
-    - name: Run tests
-      run: |
-        python -m venv venv
-        source venv/bin/activate
-        pytest  # Assumes you have tests to run
-
-    - name: Deploy to Heroku
-      run: |
-        heroku login -i
-        git push heroku master
-      env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
-
     - name: Run Gunicorn
       run: |
         source venv/bin/activate
