@@ -14,24 +14,24 @@ client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # List to store thread IDs
 thread_ids = []
 
-# Mapping of company names to assistant IDs
+# Mapping of Topic names to assistant IDs
 assistant_ids = {
-    "Tadiran": "asst_zjdfsXJiHPIVRH5125UCftyT",
-    "Cyber_Insurance_Academy": "asst_FSBfYbAOJC77HFe2SArDanAR",
-    "CybergymIEC": "asst_whd9uNg1EStSPwBhrVCJDFQ9"
+    "Topic1": "assistant ID",
+    "Topic2": "assistant ID",
+    "Topic3": "assistant ID"
     # Add more mappings as needed
 }
 
 # Generate posts using OpenAI API
-def generate_posts(company_name, num_posts, post_length, additional_info):
+def generate_posts(topic_name, num_posts, post_length, additional_info):
     posts = []
-    assistant_id = assistant_ids.get(company_name)
+    assistant_id = assistant_ids.get(topic_name)
 
     if not assistant_id:
-        logging.error(f"Missing assistant ID for the company: {company_name}")
-        return ["Error: No assistant ID found for the specified company."]
+        logging.error(f"Missing assistant ID for the Topic: {topic_name}")
+        return ["Error: No assistant ID found for the specified Topic."]
 
-    logging.info(f"Generating {num_posts} {post_length} post(s) for company: {company_name}")
+    logging.info(f"Generating {num_posts} {post_length} post(s) for Topic: {topic_name}")
 
     # Create a new thread
     thread = client.beta.threads.create()
@@ -47,11 +47,11 @@ def generate_posts(company_name, num_posts, post_length, additional_info):
             client.beta.threads.messages.create(thread_id=thread_id, role="user", content=message)
 
             if post_length == "short":
-                instructions = f"Please generate a short LinkedIn post about the Company {company_name} talk about {additional_info}.Use the instructions of the assistant to write it. The post should be between 400 to 700 characters. Only provide the post content without any additional comments or context."
+                instructions = f"Please generate a short LinkedIn post about the Topic {topic_name} talk about {additional_info}.Use the instructions of the assistant to write it. The post should be between 400 to 700 characters. Only provide the post content without any additional comments or context."
             elif post_length == "medium":
-                instructions = f"Please generate a medium LinkedIn post about the Company {company_name} talk about {additional_info}.Use the instructions of the assistant to write it. The post should be between 700 to 1100 characters. Only provide the post content without any additional comments or context."     
+                instructions = f"Please generate a medium LinkedIn post about the Topic {topic_name} talk about {additional_info}.Use the instructions of the assistant to write it. The post should be between 700 to 1100 characters. Only provide the post content without any additional comments or context."     
             else:
-                instructions = f"Please generate a long LinkedIn post  about the Company {company_name} talk about {additional_info}.Use the instructions of the assistant to write it. The post should be between 1100 to 1500 characters. Only provide the post content without any additional comments or context."
+                instructions = f"Please generate a long LinkedIn post  about the Topic {topic_name} talk about {additional_info}.Use the instructions of the assistant to write it. The post should be between 1100 to 1500 characters. Only provide the post content without any additional comments or context."
 
             run = client.beta.threads.runs.create(
                 thread_id=thread_id,
@@ -69,11 +69,11 @@ def generate_posts(company_name, num_posts, post_length, additional_info):
     return posts, thread_id  # Return a list of post contents or errors and the thread ID
 
 # Regenerate post with modifications
-def regenerate_post(company_name, original_content, modifications, thread_id):
-    assistant_id = assistant_ids.get(company_name)
+def regenerate_post(topic_name, original_content, modifications, thread_id):
+    assistant_id = assistant_ids.get(topic_name)
     if not assistant_id or not thread_id:
-        logging.error(f"Missing ID for the company: {company_name} or thread ID")
-        return "Error: No ID found for the specified company or thread."
+        logging.error(f"Missing ID for the Topic: {topic_name} or thread ID")
+        return "Error: No ID found for the specified Topic or thread."
 
     message = (
         f"Here is the original LinkedIn post: {original_content}\n"

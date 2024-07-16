@@ -28,17 +28,17 @@ def generate_post():
         return _build_cors_prelight_response()
     elif request.method == 'POST':
         data = request.get_json(force=True)
-        required_keys = ['company_name', 'num_posts', 'post_length','additional_info']
+        required_keys = ['topic_name', 'num_posts', 'post_length','additional_info']
         missing_keys = [key for key in required_keys if key not in data]
         if missing_keys:
             return jsonify({"error": f"Missing data for post generation: {missing_keys}"}), 400
 
-        company_name = data['company_name']
+        topic_name = data['topic_name']
         num_posts = int(data['num_posts'])
         post_length = data['post_length']
         additional_info = data['additional_info']
 
-        posts, thread_id = generate_posts(company_name, num_posts, post_length, additional_info)
+        posts, thread_id = generate_posts(topic_name, num_posts, post_length, additional_info)
         logging.info(f"Posts Data: {posts}")
         return jsonify({"LinkedIn Posts": posts, "thread_id": thread_id}), 200
 
@@ -47,10 +47,10 @@ def edit_post(post_index):
     data = request.get_json(force=True)
     modifications = data.get('modifications')
     original_content = data.get('original_content')
-    company_name = data.get('company_name')
+    topic_name = data.get('topic_name')
     thread_id = data.get('thread_id')
 
-    regenerated_post = regenerate_post(company_name, original_content, modifications, thread_id)
+    regenerated_post = regenerate_post(topic_name, original_content, modifications, thread_id)
     return jsonify({"LinkedIn Post": regenerated_post}), 200
 
 @app.route('/')

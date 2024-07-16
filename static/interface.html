@@ -196,11 +196,11 @@
         <h1>LinkedIn Post Generator</h1>
         <form id="postForm">
             <div class="form-group">
-                <label for="company_name">Company name:</label>
-                <select id="company_name" name="company_name" required>
-                    <option value="Tadiran">Tadiran</option>
-                    <option value="Cyber_Insurance_Academy">Cyber Insurance Academy</option>
-                    <option value="CybergymIEC">CybergymIEC</option>
+                <label for="topic_name">Topic name:</label>
+                <select id="topic_name" name="topic_name" required>
+                    <option value="Topic1">Topic1</option>
+                    <option value="Topic2">Topic2</option>
+                    <option value="Topic3">Topic3</option>
                     <!-- Add more companies as needed -->
                 </select>
             </div>
@@ -212,11 +212,6 @@
                     <option value="3">3</option>
                     <option value="4">4</option>
                     <option value="5">5</option>
-                    <option value="6">6</option>
-                    <option value="7">7</option>
-                    <option value="8">8</option>
-                    <option value="9">9</option>
-                    <option value="10">10</option>
                 </select>
             </div>
             <div class="form-group">
@@ -266,7 +261,7 @@
     <script>
         let currentEditIndex = null;
         let originalContent = "";
-        let companyName = "";
+        let TopicName = "";
         let currentThreadId = null; // Add this line to store the thread ID
         let postVersions = []; // Store versions of posts
 
@@ -276,12 +271,12 @@
             loadingIndicator.style.display = 'block';
 
             const formData = {
-                company_name: document.getElementById('company_name').value,
+                topic_name: document.getElementById('topic_name').value,
                 num_posts: document.getElementById('num_posts').value,
                 post_length: document.getElementById('post_length').value,
                 additional_info: document.getElementById('additional_info').value
             };
-            companyName = formData.company_name;
+            TopicName = formData.topic_name;
 
             fetch('/generate_post', {
                 method: 'POST',
@@ -393,7 +388,7 @@
                     content: editedContent,
                     modifications: modifications,
                     original_content: originalContent,
-                    company_name: companyName,
+                    topic_name: TopicName,
                     thread_id: currentThreadId // Add the thread ID here
                 })
             })
