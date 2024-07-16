@@ -115,5 +115,5 @@ MIT License
 
 ## Demo 
 
-![Show the interface to create the assistant](./static/images/how _to _create_assID.png)
+![Show the interface to create the assistant](./static/images/how_to_create_assID.png)
 
