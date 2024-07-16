@@ -117,3 +117,4 @@ MIT License
 
 ![Show the interface to create the assistant](./static/images/how_to_create_assID.png)
 
+[![Show the video](./static/images/video_thumbnail.png)](https://drive.google.com/file/d/17FgBOBB57egJVnhI9knJq6C27g1l5eIp/view?usp=sharing)
